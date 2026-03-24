@@ -24,3 +24,81 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.construction-panel {
+  animation: panel-rise 600ms ease-out;
+}
+
+.construction-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(8px);
+  opacity: 0.6;
+}
+
+.construction-orb--one {
+  top: 12%;
+  left: 8%;
+  height: 14rem;
+  width: 14rem;
+  background: linear-gradient(135deg, #0ea5e9, #22d3ee);
+  animation: orb-float 7s ease-in-out infinite;
+}
+
+.construction-orb--two {
+  right: 8%;
+  bottom: 10%;
+  height: 18rem;
+  width: 18rem;
+  background: linear-gradient(135deg, #22c55e, #14b8a6);
+  animation: orb-float 9s ease-in-out infinite reverse;
+}
+
+.construction-dot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+  background: #0284c7;
+  animation: dot-blink 1.5s ease-in-out infinite;
+}
+
+.construction-pulse {
+  height: 0.55rem;
+  width: 0.55rem;
+  border-radius: 9999px;
+  background: #0ea5e9;
+  animation: dot-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-24px) translateX(14px);
+  }
+}
+
+@keyframes dot-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.28);
+  }
+}
