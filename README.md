@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 10xDevs Portal
+
+A modern full-stack campus portal designed to centralize student and faculty achievements, showcase technical projects, and host academic publications.
+
+## Key Features
+
+- Role-based profiles for students and faculty
+- Project portfolios with tech stack, links, and team members
+- Document viewing support for academic files
+- Certification hub for verified credentials
+- JWT-based authentication with bcrypt password hashing
+
+## Tech Stack
+
+- Framework: Next.js 16.2 (App Router)
+- Frontend: React 19, Tailwind CSS v4, Lucide Icons
+- Forms and validation: React Hook Form, Zod
+- Database: MongoDB with Mongoose
+- Authentication: jose (JWT), bcrypt
+- File handling: React Dropzone
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/<your-username>/10xdevs.git
+cd 10xdevs
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment variables
+
+Use the sample env file as a template:
+
+```bash
+cp .env.example .env.local
+```
+
+Then update values in `.env.local`.
+
+### 4. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project currently uses:
 
-## Learn More
+- `MONGODB_URL` for MongoDB connection
+- `JWT_SECRET` for signing and verifying auth tokens
+- `NODE_ENV` is read automatically by Next.js (`development` or `production`)
 
-To learn more about Next.js, take a look at the following resources:
+See the sample file: [.env.example](.env.example)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Available Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+src/
+   app/
+      api/
+         auth/
+            login/
+            register/
+   components/
+   server/
+      db/
+      models/
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+Please follow the contribution workflow in [CONTRIBUTING.md](CONTRIBUTING.md).
