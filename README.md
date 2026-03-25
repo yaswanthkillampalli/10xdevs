@@ -80,14 +80,42 @@ npm run lint
 ```text
 src/
    app/
+      globals.css
+      layout.tsx
+      page.tsx
+      (auth)/
+         login/
+            page.tsx
+         register/
+            page.tsx
       api/
          auth/
             login/
+               route.ts
             register/
+               route.ts
+         home/
+            route.ts
+      home/
+         page.tsx
    components/
+      UnderConstruction.tsx
+      auth/
+         LoginForm.tsx
+         RegisterForm.tsx
+      home/
+         StatCard.tsx
+      layout/
+         Navbar.tsx
    server/
       db/
+         connect.ts
       models/
+         AcademicWork.ts
+         Achievement.ts
+         Certification.ts
+         Project.ts
+         User.ts
 ```
 
 ## Contributing
