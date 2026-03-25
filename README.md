@@ -24,7 +24,7 @@ A modern full-stack campus portal designed to centralize student and faculty ach
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/10xdevs.git
+git clone https://github.com/yaswanthkillampalli/10xdevs.git
 cd 10xdevs
 ```
 
