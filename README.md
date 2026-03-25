@@ -52,6 +52,10 @@ npm run dev
 
 Open http://localhost:3000 in your browser.
 
+## Deployment
+
+Live URL: https://10xdevs.yashdev.tech/
+
 ## Environment Variables
 
 This project currently uses:
