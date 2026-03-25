@@ -5,6 +5,7 @@ export interface ICertification extends Document {
   issuingOrganization: string; // e.g., "Microsoft", "Edunet Foundation"
   issueDate: Date;
   expirationDate?: Date; // Optional, as some certs expire
+  certificationType: 'course_completion' | 'internship' | 'workshop' | 'professional_certification' | 'other';
   credentialId?: string;
   credentialUrl?: string; // Link to the official verification page
   documentUrl?: string; // S3 link if they uploaded the PDF certificate
@@ -19,6 +20,11 @@ const CertificationSchema: Schema = new Schema({
   credentialId: { type: String },
   credentialUrl: { type: String },
   documentUrl: { type: String },
+  certificationType: { 
+    type: String, 
+    enum: ['course_completion', 'internship', 'workshop', 'professional_certification', 'other'],
+    required: true
+  },
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
