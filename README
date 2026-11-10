@@ -1,0 +1,404 @@
+# 10xdevss
+
+A student portfolio platform. Students build a profile and showcase their **projects, publications, achievements, experience, skills and certifications**. Faculty and admins can search students, and admins can manage users.
+
+This is a monorepo with two apps:
+
+| Folder | What it is |
+|---|---|
+| `10xdevss/` | Frontend: React + Vite single-page app |
+| `backend/` | Backend: Node.js + Express REST API with MongoDB |
+
+---
+
+## Table of contents
+
+1. [Features](#features)
+2. [Tech stack and libraries](#tech-stack-and-libraries)
+3. [Project structure](#project-structure)
+4. [Installation](#installation)
+5. [Environment variables](#environment-variables)
+6. [Available scripts](#available-scripts)
+7. [How authentication works](#how-authentication-works)
+8. [API overview](#api-overview)
+9. [Security measures already in place](#security-measures-already-in-place)
+10. [Known issues and suggested improvements](#known-issues-and-suggested-improvements)
+11. [Roadmap ideas](#roadmap-ideas)
+
+---
+
+## Features
+
+- Register, login, logout, change password, and forgot/reset password via emailed OTP
+- Role-based access: `student`, `faculty`, `admin`
+- Portfolio sections with full CRUD: projects, publications, achievements, experience, skills, certifications
+- "Discover" feeds for projects, publications and achievements
+- Public profile pages (`/profile/:userId`)
+- Dashboard with an overview of the user's activity
+- Faculty/admin student search
+- Admin panel: list/search users, edit user details and roles, reset a user's password
+- Image uploads through ImageKit (the browser uploads directly, the backend only signs the request)
+- Light/dark loaders and themed UI
+
+---
+
+## Tech stack and libraries
+
+### Backend (`backend/`)
+
+| Library | Purpose |
+|---|---|
+| `express` (v5) | Web framework |
+| `mongoose` | MongoDB ODM and schemas |
+| `jsonwebtoken` | Signing and verifying access/refresh tokens |
+| `bcryptjs` | Password hashing (cost factor 12) |
+| `helmet` | Secure HTTP headers |
+| `cors` | Allow-list of frontend origins |
+| `express-rate-limit` | Global and auth-specific rate limiting |
+| `dotenv` | Loads environment variables from `.env` |
+| `resend` | Sends the password-reset OTP email |
+| `ms` | Parses durations like `15m` and `7d` |
+
+External services: **MongoDB**, **Resend** (email), **ImageKit** (image hosting).
+
+### Frontend (`10xdevss/`)
+
+| Library | Purpose |
+|---|---|
+| `react` / `react-dom` (v19) | UI |
+| `vite` | Dev server and bundler |
+| `react-router` / `react-router-dom` (v7) | Routing and protected routes |
+| `axios` | HTTP client with interceptors for auth |
+| `js-cookie` | Stores tokens in cookies |
+| `bootstrap` + `@popperjs/core` | Layout and components |
+| `sass` | Stylesheets |
+| `react-toastify` | Toast notifications |
+| `lucide-react`, `react-icons` | Icons |
+| `lottie-react`, `@lottiefiles/dotlottie-react` | Loading animations |
+| `@imagekit/react` | Image upload and delivery |
+| `prop-types` | Prop validation |
+| `babel-plugin-react-compiler` | React Compiler |
+| `eslint` + plugins | Linting |
+
+---
+
+## Project structure
+
+```
+.
+├── backend/
+│   ├── server.js              # Entry point: loads env, connects DB, starts server
+│   ├── app.js                 # Express app: helmet, CORS, rate limits, routes
+│   ├── config/db.js           # MongoDB connection
+│   ├── controllers/           # Request handlers (auth, admin, dashboard, portfolio/*)
+│   │   └── portfolio/crudFactory.js   # Reusable CRUD controller scoped to the owner
+│   ├── middleware/
+│   │   ├── auth.js            # protect (verify JWT) and restrictTo(roles)
+│   │   ├── validate.js        # Request body validation
+│   │   └── errorHandler.js
+│   ├── models/                # User, UserProfile, Project, Publication, Achievement,
+│   │                          # Experience, Skill, Certification, PasswordResetOtp
+│   ├── routes/                # Route definitions (portfolio/* for each section)
+│   ├── utils/                 # jwt.js, email.js, imagekit.js, response.js
+│   └── .env.example
+└── 10xdevss/
+    ├── src/
+    │   ├── authentication/api.js   # Axios instance, token storage, all API calls
+    │   ├── context/AuthContext.jsx # Session state (user, profile, role)
+    │   ├── routes/                 # ProtectedRoute, AdminProtectedRoute, FacultyAdminProtectedRoute
+    │   ├── pages/                  # auth, portfolio, profile, settings, admin, faculty
+    │   ├── components/             # Navbar, Layout, cards, dashboard widgets
+    │   ├── hooks/useImageKitUpload.js
+    │   ├── styles/                 # Per-page and per-component CSS
+    │   └── App.jsx                 # Route table
+    ├── public/                     # Logos and Lottie animations
+    └── .env.example
+```
+
+---
+
+## Installation
+
+### Prerequisites
+
+- **Node.js** 18 or newer (20+ recommended) and npm
+- **MongoDB**: local install or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
+- A **Resend** account and API key (for password-reset emails)
+- An **ImageKit** account (public key, private key, URL endpoint)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yaswanthkillampalli/10xdevss-vite.git
+cd 10xdevss-vite
+```
+
+### 2. Set up the backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env      # Windows PowerShell: Copy-Item .env.example .env
+```
+
+Open `.env` and fill in the values (see [Environment variables](#environment-variables)), then start the API:
+
+```bash
+npm run dev
+```
+
+The API runs at `http://localhost:5000`. Check it at `http://localhost:5000/health`.
+
+### 3. Set up the frontend
+
+Open a second terminal:
+
+```bash
+cd 10xdevss
+npm install
+cp .env.example .env      # Windows PowerShell: Copy-Item .env.example .env
+npm run dev
+```
+
+The app runs at `http://localhost:5173`.
+
+### 4. Create an admin user
+
+Self-registration only allows the `student` and `faculty` roles. To get an admin:
+
+1. Register a normal account through the app.
+2. In MongoDB (Compass, `mongosh` or Atlas), change that user's `role` field to `"admin"`.
+
+```js
+db.users.updateOne({ emailId: "you@example.com" }, { $set: { role: "admin" } })
+```
+
+After that, an admin can change other users' roles from the admin panel.
+
+---
+
+## Environment variables
+
+### `backend/.env`
+
+| Variable | Example | Description |
+|---|---|---|
+| `PORT` | `5000` | API port |
+| `NODE_ENV` | `development` | `development` or `production` |
+| `MONGODB_URI` | `mongodb://127.0.0.1:27017/10xdevss` | MongoDB connection string (**required**) |
+| `ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated list of frontend origins allowed by CORS |
+| `JWT_ACCESS_SECRET` | long random string | Signs access tokens |
+| `JWT_REFRESH_SECRET` | different long random string | Signs refresh tokens |
+| `JWT_ACCESS_EXPIRES_IN` | `15m` | Access token lifetime |
+| `JWT_REFRESH_EXPIRES_IN` | `7d` | Refresh token lifetime |
+| `RESEND_API_KEY` | `re_xxx` | Resend API key |
+| `RESEND_FROM_EMAIL` | `onboarding@resend.dev` | Sender address (use a verified domain in production) |
+| `IMAGEKIT_PUBLIC_KEY` | | ImageKit public key |
+| `IMAGEKIT_PRIVATE_KEY` | | ImageKit private key (**never expose to the frontend**) |
+| `IMAGEKIT_AUTH_TTL_SECONDS` | `600` | Lifetime of each upload signature |
+
+Generate strong secrets with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### `10xdevss/.env`
+
+| Variable | Example | Description |
+|---|---|---|
+| `VITE_BACKEND_URL` | `http://localhost:5000` | Backend base URL |
+| `VITE_IMAGEKIT_PUBLIC_KEY` | | ImageKit public key |
+| `VITE_IMAGEKIT_URL_ENDPOINT` | `https://ik.imagekit.io/your_id` | ImageKit URL endpoint |
+| `VITE_IMAGEKIT_AUTH_ENDPOINT` | `http://localhost:5000/api/imagekit/auth` | Backend endpoint that signs uploads |
+
+> `.env` files are git-ignored. Only the `.env.example` files are committed. Never commit real keys.
+
+---
+
+## Available scripts
+
+**Backend** (`backend/`)
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Starts the API with `node --watch` (auto-restart on changes) |
+| `npm start` | Starts the API normally (production) |
+
+**Frontend** (`10xdevss/`)
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Starts the Vite dev server |
+| `npm run build` | Builds for production into `dist/` |
+| `npm run preview` | Serves the production build locally |
+| `npm run lint` | Runs ESLint |
+
+---
+
+## How authentication works
+
+The app uses **JWT access + refresh tokens** with refresh-token rotation, plus role-based access control.
+
+### 1. Register and login
+
+1. The client sends `POST /api/auth/register` or `POST /api/auth/login`.
+2. The backend validates the body (`middleware/validate.js`).
+3. Passwords are hashed with **bcrypt (cost 12)** in a Mongoose `pre("save")` hook. Plain-text passwords are never stored, and the `password` field is `select: false` so it is not returned by default.
+4. On success the backend returns:
+   - an **access token** (default 15 minutes)
+   - a **refresh token** (default 7 days)
+   - the expiry time for each, plus the user and profile data
+5. The refresh token is also saved on the user document so the server can check it later.
+
+### 2. Token storage on the client
+
+`authentication/api.js` stores both tokens in cookies using `js-cookie` (`secure: true`, `sameSite: "strict"`), along with their expiry times.
+
+### 3. Authenticated requests
+
+An Axios request interceptor attaches `Authorization: Bearer <accessToken>` to every request. On the server, the `protect` middleware:
+
+1. reads the Bearer token
+2. verifies it with `JWT_ACCESS_SECRET`
+3. loads the user from MongoDB and rejects the request if the user does not exist or `isActive` is `false`
+4. attaches the user to `req.user`
+
+### 4. Automatic refresh
+
+If a request returns `401`, the Axios response interceptor:
+
+1. retries once (`_retry` flag prevents loops)
+2. calls `POST /api/auth/refresh-token` with the refresh token (a shared promise makes sure parallel requests trigger only one refresh)
+3. saves the new token pair and replays the original request
+4. clears the cookies if refreshing fails, which sends the user back to login
+
+On the server, the refresh endpoint verifies the token with `JWT_REFRESH_SECRET`, checks that it **matches the one stored for the user** (so old tokens are rejected), then issues a **new pair** and stores the new refresh token (**rotation**).
+
+### 5. Logout
+
+`POST /api/auth/logout` clears the stored refresh token in the database, and the client deletes its cookies. The refresh token can no longer be used.
+
+### 6. Roles and route protection
+
+| Role | Access |
+|---|---|
+| `student` | Own portfolio, dashboard, discover feeds, public profiles |
+| `faculty` | Everything a student has, plus student search |
+| `admin` | Everything above, plus user management |
+
+- **Backend:** `restrictTo("admin")` and `restrictTo("faculty", "admin")` middleware on sensitive routes. This is the real enforcement.
+- **Frontend:** `ProtectedRoute`, `FacultyAdminProtectedRoute` and `AdminProtectedRoute` redirect users without access. These are for user experience only, since the server always re-checks.
+- Portfolio records are always queried with `userId: req.user._id`, so users can only read and change their own records.
+
+### 7. Forgot / reset password (OTP)
+
+1. `POST /api/auth/forgot-password` with the email.
+2. The server generates a 6-digit OTP, stores only its **SHA-256 hash**, and sets an expiry of **5 minutes**. There is one OTP record per email, so a new request replaces the old one. A MongoDB TTL index deletes expired records.
+3. The OTP is emailed with Resend.
+4. The response is always the same generic message, whether or not the email exists, which prevents **user enumeration**.
+5. `POST /api/auth/reset-password` with email, OTP and new password. If the OTP matches and has not expired, the password is changed, the OTP is deleted (single use), and a fresh token pair is issued.
+
+### 8. ImageKit upload authorization
+
+`GET /api/imagekit/auth` (login required) returns a short-lived signature (HMAC-SHA1 with the private key, default 10 minutes). The browser uses it to upload directly to ImageKit, so the private key never leaves the server.
+
+---
+
+## API overview
+
+All routes are prefixed with `/api`. `health` is at `/health`.
+
+| Area | Routes | Access |
+|---|---|---|
+| Auth | `POST /auth/register`, `/auth/login`, `/auth/refresh-token`, `/auth/forgot-password`, `/auth/reset-password` | Public (rate limited) |
+| Auth | `POST /auth/logout`, `GET /auth/me`, `POST /auth/change-password` | Logged in |
+| Users | `GET/PUT/DELETE /users/me`, `PUT /users/me/password` | Logged in |
+| Users | `GET /users/search` | Faculty, admin |
+| Users | `GET /users`, `DELETE /users/:id` | Admin |
+| Profile | `GET /profile/me`, `POST/PUT/DELETE /profile` | Logged in |
+| Profile | `GET /profile/user/:userId` | Public |
+| Portfolio | `/projects`, `/publications`, `/achievements`, `/experience`, `/skills`, `/certifications`: `GET`, `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` | Logged in, owner only |
+| Discover | `GET /projects/discover`, `/publications/discover`, `/achievements/discover` | Logged in |
+| Dashboard | `GET /dashboard/overview` | Logged in |
+| Admin | `GET /admin/users`, `GET/PUT /admin/users/:id`, `POST /admin/users/:id/change-password` | Admin |
+| ImageKit | `GET /imagekit/auth` | Logged in |
+
+Responses follow a consistent shape: `{ success, message, data, ... }`.
+
+---
+
+## Security measures already in place
+
+- `helmet` for security headers
+- CORS allow-list from `ALLOWED_ORIGINS`, with credentials
+- Rate limiting: 200 requests / 15 min globally, 20 requests / 15 min on `/api/auth`
+- JSON body size limit of 10 KB
+- bcrypt password hashing (cost 12), `select: false` on password and refresh token
+- Short-lived access tokens, refresh-token rotation and server-side revocation
+- Generic responses on forgot-password (no user enumeration), hashed and expiring OTPs
+- Admin role cannot be chosen at registration
+- Ownership checks on all portfolio records
+- `.env` files git-ignored
+
+---
+
+## Known issues and suggested improvements
+
+These come from reading the code. Roughly ordered by importance.
+
+### Security
+
+1. **Fallback JWT secrets.** `utils/jwt.js` falls back to `"dev-access-secret"` and `"dev-refresh-secret"` if the env vars are missing. In production, the server should refuse to start without real secrets.
+2. **Refresh tokens are stored in plain text** in the database (the code comment says "hash"). Store a hash (for example SHA-256) and compare hashes, so a database leak cannot be used to hijack sessions.
+3. **Tokens live in JavaScript-readable cookies.** Any XSS bug could steal them. The safer pattern is to set the refresh token as an **HttpOnly, Secure, SameSite cookie from the server** and keep the access token in memory only.
+4. **OTP generation uses `Math.random()`.** Use `crypto.randomInt(100000, 1000000)`. Also add a limit on wrong OTP attempts per email (for example 5), because a 6-digit code can be brute-forced if only the shared rate limiter protects it.
+5. **Anyone can self-register as `faculty`**, which unlocks student search. Add faculty approval or email-domain verification.
+6. **Admin search builds a regex from raw user input** (`new RegExp(search)`). Escape special characters to avoid regex injection and slow-regex (ReDoS) issues. Also cap `limit` and validate `page`.
+7. **Weak password policy** (minimum 6 characters). Raise it to 8 to 12 and consider a breached-password check.
+8. **Access tokens stay valid until expiry after logout or password change.** The 15-minute lifetime limits the risk. A `tokenVersion` field on the user would allow instant revocation.
+9. `express.urlencoded` has no size limit. Add `limit: "10kb"` like the JSON parser.
+10. Create endpoints spread `req.body` straight into the model (`...req.body`). Whitelist the allowed fields.
+11. Token payload includes email, name and roll ID. Keep it to `id` and `role`, and load the rest from the database.
+12. Add email verification at registration and optional two-factor authentication.
+
+### Code quality and reliability
+
+- Replace the hand-written validators with a schema library such as **zod** or **joi**.
+- Several files import from `react-router` while `package.json` lists `react-router-dom`. It works in v7, but pick one.
+- The frontend falls back to `http://localhost:3000` when `VITE_BACKEND_URL` is missing, but the backend runs on `5000`. Align the default.
+- `App.jsx` has duplicate routes with a typo (`portofolio/...`). Remove them and redirect if old links must keep working.
+- The root `package.json` is empty (`{}`) and the root `readme.md` was empty. Consider npm workspaces or a root script to run both apps.
+- Add structured logging (for example `pino`) instead of `console.log`, and avoid logging full error objects in production.
+- Add a graceful shutdown on `SIGINT`, and close the Mongo connection.
+- Use `.lean()` on read-only Mongoose queries to improve performance, and add database indexes for search and discover queries.
+
+### Testing and tooling
+
+- No automated tests yet. Add **Vitest + React Testing Library** (frontend) and **Jest/Vitest + Supertest** (backend, with `mongodb-memory-server`).
+- Add a GitHub Actions workflow for lint, test and build.
+- Add Prettier, Husky and lint-staged for consistent commits.
+- Add a `Dockerfile` and `docker-compose.yml` (API + MongoDB + frontend) for one-command setup.
+- Document the API with OpenAPI/Swagger.
+
+---
+
+## Roadmap ideas
+
+- Pagination, sorting and filters on the discover feeds
+- Skill-based search and tags for finding students
+- Downloadable PDF resume generated from a user's portfolio
+- Notifications and activity feed
+- Social logins (Google, GitHub)
+- Admin analytics dashboard
+- Bulk import of students from CSV
+- Accessibility audit and full mobile responsiveness pass
+- TypeScript migration
+
+---
+
+## Contributing
+
+1. Fork the repo and create a branch: `git checkout -b feature/my-change`
+2. Make your changes and run `npm run lint` in `10xdevss/`
+3. Commit and open a pull request
