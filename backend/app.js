@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
 const authRoutes = require("./routes/authRoutes");
@@ -16,7 +17,7 @@ app.set("trust proxy", 1);
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000").split(",");
-
+app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
