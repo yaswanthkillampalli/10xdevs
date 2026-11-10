@@ -1,4 +1,4 @@
-# 10xdevss
+# 10xdevs
 
 A student portfolio platform. Students build a profile and showcase their **projects, publications, achievements, experience, skills and certifications**. Faculty and admins can search students, and admins can manage users.
 
@@ -6,7 +6,7 @@ This is a monorepo with two apps:
 
 | Folder | What it is |
 |---|---|
-| `10xdevss/` | Frontend: React + Vite single-page app |
+| `frontend/` | Frontend: React + Vite single-page app |
 | `backend/` | Backend: Node.js + Express REST API with MongoDB |
 
 ---
@@ -129,8 +129,8 @@ External services: **MongoDB**, **Resend** (email), **ImageKit** (image hosting)
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yaswanthkillampalli/10xdevss-vite.git
-cd 10xdevss-vite
+git clone https://github.com/yaswanthkillampalli/10xdevs.git
+cd 10xdevs
 ```
 
 ### 2. Set up the backend
